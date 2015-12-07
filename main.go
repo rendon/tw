@@ -5,17 +5,31 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 )
 
 const (
+	baseURL = "https://api.twitter.com/1.1"
 	authURL = "https://api.twitter.com/oauth2/token"
 )
 
-func GetAccessToken(consumerKey, consumerSecret string) (string, error) {
+var (
+	errTooManyRequests = errors.New("Too Many Requests")
+)
+
+type Client struct {
+	consumerKey       string
+	consumerSecret    string
+	bearerAccessToken string
+	httpClient        *http.Client
+}
+
+func GetBearerAccessToken(consumerKey, consumerSecret string) (string, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", authURL, nil)
 	req.Header.Add("User-Agent", "My Twitter app")
@@ -49,4 +63,69 @@ func GetAccessToken(consumerKey, consumerSecret string) (string, error) {
 		return "", err
 	}
 	return data["access_token"].(string), nil
+}
+
+func NewClient(consumerKey, consumerSecret string) *Client {
+	return &Client{
+		consumerKey:    consumerKey,
+		consumerSecret: consumerSecret,
+	}
+}
+
+func (c *Client) Setup() error {
+	bat, err := GetBearerAccessToken(c.consumerKey, c.consumerSecret)
+	if err != nil {
+		return err
+	}
+	c.bearerAccessToken = bat
+	c.httpClient = &http.Client{}
+	return nil
+}
+
+func (c *Client) prepareRequest(method, url string) (*http.Request, error) {
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("User-Agent", "My Twitter App")
+	auth := fmt.Sprintf("Bearer %s", c.bearerAccessToken)
+	req.Header.Add("Authorization", auth)
+	req.Header.Add("Accept-Encoding", "gzip")
+	return req, err
+}
+
+func (c *Client) UsersShow(user string) (map[string]interface{}, error) {
+	user = url.QueryEscape(user)
+	urlStr := fmt.Sprintf("%s/users/show.json?screen_name=%s", baseURL, user)
+	req, err := c.prepareRequest("GET", urlStr)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	r, err := gzip.NewReader(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	rb, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
+	// Too Many Requests
+	if resp.StatusCode == 429 {
+		return nil, errTooManyRequests
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("RB: %s", rb)
+		return nil, errors.New(resp.Status)
+	}
+	var data map[string]interface{}
+	if err = json.Unmarshal(rb, &data); err != nil {
+		return nil, err
+	}
+	return data, nil
 }
