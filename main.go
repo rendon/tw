@@ -1,4 +1,4 @@
-package main
+package tw
 
 import (
 	"bytes"
@@ -7,22 +7,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
-	"os"
 )
 
 const (
 	authURL = "https://api.twitter.com/oauth2/token"
 )
 
-var (
-	consumerKey    = os.Getenv("TWITTER_CONSUMER_KEY")
-	consumerSecret = os.Getenv("TWITTER_CONSUMER_SECRET")
-)
-
-func getAccessToken() (string, error) {
+func GetAccessToken(consumerKey, consumerSecret string) (string, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", authURL, nil)
 	req.Header.Add("User-Agent", "My Twitter app")
@@ -56,12 +49,4 @@ func getAccessToken() (string, error) {
 		return "", err
 	}
 	return data["access_token"].(string), nil
-}
-
-func main() {
-	at, err := getAccessToken()
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Access token: %s\n", at)
 }
