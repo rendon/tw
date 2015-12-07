@@ -123,18 +123,16 @@ func exec(req *http.Request) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// Too Many Requests
-	if resp.StatusCode == 429 {
-		return nil, ErrTooManyRequests
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(resp.Status)
-	}
 	var data map[string]interface{}
 	if err = json.Unmarshal(rb, &data); err != nil {
 		return nil, err
+	}
+	// Too Many Requests
+	if resp.StatusCode == 429 {
+		return data, ErrTooManyRequests
+	}
+	if resp.StatusCode != http.StatusOK {
+		return data, errors.New(resp.Status)
 	}
 	return data, nil
 }
