@@ -53,8 +53,8 @@ func TestTooMuchRequests(t *testing.T) {
 		log.Printf("Request #%d", i)
 		_, err := tc.UsersShow("twitterdev")
 		if err != nil {
-			if err != errTooManyRequests {
-				t.Fatalf("Expected %s, got %s", errTooManyRequests, err)
+			if err != ErrTooManyRequests {
+				t.Fatalf("Expected %s, got %s", ErrTooManyRequests, err)
 			} else {
 				break
 			}

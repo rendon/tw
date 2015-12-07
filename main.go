@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	errTooManyRequests = errors.New("Too Many Requests")
+	ErrTooManyRequests = errors.New("Too Many Requests")
 )
 
 type Client struct {
@@ -114,7 +114,7 @@ func (c *Client) UsersShow(user string) (map[string]interface{}, error) {
 
 	// Too Many Requests
 	if resp.StatusCode == 429 {
-		return nil, errTooManyRequests
+		return nil, ErrTooManyRequests
 	}
 
 	if resp.StatusCode != http.StatusOK {
