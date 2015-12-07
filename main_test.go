@@ -3,6 +3,7 @@ package tw
 import (
 	"log"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -37,6 +38,23 @@ func TestGetUsersShow(t *testing.T) {
 	id := data["id_str"].(string)
 	if id != "2244994945" {
 		t.Errorf("Expected ID to be 2244994945, got %v", id)
+	}
+}
+
+func TestGetUsersShowByID(t *testing.T) {
+	tc := NewClient()
+	if err := tc.SetKeys(ck, cs); err != nil {
+		t.Fatalf("Failed to setup client")
+	}
+
+	data, err := tc.GetUsersShowByID(int64(2244994945))
+	if err != nil {
+		t.Fatalf("Failed to obtain user: %s", err)
+	}
+
+	user := data["screen_name"].(string)
+	if strings.ToLower(user) != "twitterdev" {
+		t.Errorf("Expected user to be %q, got %q", "twitterdev", user)
 	}
 }
 

@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 )
@@ -26,7 +25,6 @@ type Client struct {
 	consumerKey       string
 	consumerSecret    string
 	bearerAccessToken string
-	httpClient        *http.Client
 }
 
 func GetBearerAccessToken(consumerKey, consumerSecret string) (string, error) {
@@ -66,7 +64,7 @@ func GetBearerAccessToken(consumerKey, consumerSecret string) (string, error) {
 }
 
 func NewClient() *Client {
-	return &Client{httpClient: &http.Client{}}
+	return &Client{}
 }
 
 func (c *Client) SetKeys(consumerKey, consumerSecret string) error {
@@ -99,7 +97,21 @@ func (c *Client) GetUsersShow(user string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.httpClient.Do(req)
+	return exec(req)
+}
+
+func (c *Client) GetUsersShowByID(id int64) (map[string]interface{}, error) {
+	urlStr := fmt.Sprintf("%s/users/show.json?user_id=%d", baseURL, id)
+	req, err := c.prepareRequest("GET", urlStr)
+	if err != nil {
+		return nil, err
+	}
+	return exec(req)
+}
+
+func exec(req *http.Request) (map[string]interface{}, error) {
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +130,6 @@ func (c *Client) GetUsersShow(user string) (map[string]interface{}, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("RB: %s", rb)
 		return nil, errors.New(resp.Status)
 	}
 	var data map[string]interface{}
