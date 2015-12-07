@@ -65,20 +65,18 @@ func GetBearerAccessToken(consumerKey, consumerSecret string) (string, error) {
 	return data["access_token"].(string), nil
 }
 
-func NewClient(consumerKey, consumerSecret string) *Client {
-	return &Client{
-		consumerKey:    consumerKey,
-		consumerSecret: consumerSecret,
-	}
+func NewClient() *Client {
+	return &Client{httpClient: &http.Client{}}
 }
 
-func (c *Client) Setup() error {
-	bat, err := GetBearerAccessToken(c.consumerKey, c.consumerSecret)
+func (c *Client) SetKeys(consumerKey, consumerSecret string) error {
+	bat, err := GetBearerAccessToken(consumerKey, consumerSecret)
 	if err != nil {
 		return err
 	}
+	c.consumerSecret = consumerSecret
+	c.consumerKey = consumerKey
 	c.bearerAccessToken = bat
-	c.httpClient = &http.Client{}
 	return nil
 }
 

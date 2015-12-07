@@ -24,8 +24,8 @@ func TestGetAccessToken(t *testing.T) {
 }
 
 func TestUsersShow(t *testing.T) {
-	tc := NewClient(ck, cs)
-	if err := tc.Setup(); err != nil {
+	tc := NewClient()
+	if err := tc.SetKeys(ck, cs); err != nil {
 		t.Fatalf("Failed to setup client")
 	}
 
@@ -44,8 +44,8 @@ func TestUsersShow(t *testing.T) {
 func TestTooMuchRequests(t *testing.T) {
 	ckTMR := os.Getenv("TWITTER_CONSUMER_KEY_TMR")
 	csTMR := os.Getenv("TWITTER_CONSUMER_SECRET_TMR")
-	tc := NewClient(ckTMR, csTMR)
-	if err := tc.Setup(); err != nil {
+	tc := NewClient()
+	if err := tc.SetKeys(ckTMR, csTMR); err != nil {
 		t.Fatalf("Failed to setup client")
 	}
 	log.Printf("Too Much Requests...")
