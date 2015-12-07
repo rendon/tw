@@ -23,13 +23,13 @@ func TestGetAccessToken(t *testing.T) {
 	}
 }
 
-func TestUsersShow(t *testing.T) {
+func TestGetUsersShow(t *testing.T) {
 	tc := NewClient()
 	if err := tc.SetKeys(ck, cs); err != nil {
 		t.Fatalf("Failed to setup client")
 	}
 
-	data, err := tc.UsersShow("twitterdev")
+	data, err := tc.GetUsersShow("twitterdev")
 	if err != nil {
 		t.Fatalf("Failed to obtain user: %s", err)
 	}
@@ -51,7 +51,7 @@ func TestTooMuchRequests(t *testing.T) {
 	log.Printf("Too Much Requests...")
 	for i := 0; i < 200; i++ {
 		log.Printf("Request #%d", i)
-		_, err := tc.UsersShow("twitterdev")
+		_, err := tc.GetUsersShow("twitterdev")
 		if err != nil {
 			if err != ErrTooManyRequests {
 				t.Fatalf("Expected %s, got %s", ErrTooManyRequests, err)

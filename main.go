@@ -92,7 +92,7 @@ func (c *Client) prepareRequest(method, url string) (*http.Request, error) {
 	return req, err
 }
 
-func (c *Client) UsersShow(user string) (map[string]interface{}, error) {
+func (c *Client) GetUsersShow(user string) (map[string]interface{}, error) {
 	user = url.QueryEscape(user)
 	urlStr := fmt.Sprintf("%s/users/show.json?screen_name=%s", baseURL, user)
 	req, err := c.prepareRequest("GET", urlStr)
