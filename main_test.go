@@ -1,6 +1,7 @@
 package tw
 
 import (
+	"log"
 	"os"
 	"testing"
 )
@@ -25,7 +26,7 @@ func TestGetAccessToken(t *testing.T) {
 func TestUsersShow(t *testing.T) {
 	tc := NewClient(ck, cs)
 	if err := tc.Setup(); err != nil {
-		t.Errorf("Failed to setup client")
+		t.Fatalf("Failed to setup client")
 	}
 
 	data, err := tc.UsersShow("twitterdev")
@@ -36,5 +37,27 @@ func TestUsersShow(t *testing.T) {
 	id := data["id_str"].(string)
 	if id != "2244994945" {
 		t.Errorf("Expected ID to be 2244994945, got %v", id)
+	}
+}
+
+// TODO: find a reproducible way to test rate limits
+func TestTooMuchRequests(t *testing.T) {
+	ckTMR := os.Getenv("TWITTER_CONSUMER_KEY_TMR")
+	csTMR := os.Getenv("TWITTER_CONSUMER_SECRET_TMR")
+	tc := NewClient(ckTMR, csTMR)
+	if err := tc.Setup(); err != nil {
+		t.Fatalf("Failed to setup client")
+	}
+	log.Printf("Too Much Requests...")
+	for i := 0; i < 200; i++ {
+		log.Printf("Request #%d", i)
+		_, err := tc.UsersShow("twitterdev")
+		if err != nil {
+			if err != errTooManyRequests {
+				t.Fatalf("Expected %s, got %s", errTooManyRequests, err)
+			} else {
+				break
+			}
+		}
 	}
 }
