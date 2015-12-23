@@ -27,7 +27,7 @@ func main() {
     }
 
     // GET users/show
-    data, err := tc.UsersShow("twitterdev")
+    data, err := tc.GetUsersShow("twitterdev")
     if err != nil {
         log.Fatalf("Failed to obtain user: %s", err)
     }
