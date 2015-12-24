@@ -1,8 +1,6 @@
 package tw
 
 import (
-	"fmt"
-	"log"
 	"strings"
 	"time"
 )
