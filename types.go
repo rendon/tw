@@ -3,21 +3,31 @@ package tw
 import (
 	"strings"
 	"time"
+
+	"gopkg.in/mgo.v2/bson"
 )
 
 type twitterTime struct {
 	value time.Time
 }
 
-func (t twitterTime) MarshalJSON() ([]byte, error) {
+func (t *twitterTime) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + t.value.Format(time.RubyDate) + `"`), nil
 }
 
-func (t twitterTime) UnmarshalJSON(data []byte) error {
+func (t *twitterTime) UnmarshalJSON(data []byte) error {
 	ts := strings.Trim(string(data), `"`)
 	var err error
 	t.value, err = time.Parse(time.RubyDate, ts)
 	return err
+}
+
+func (t *twitterTime) GetBSON() (interface{}, error) {
+	return t.value, nil
+}
+
+func (t *twitterTime) SetBSON(raw bson.Raw) error {
+	return raw.Unmarshal(&t.value)
 }
 
 type User struct {
