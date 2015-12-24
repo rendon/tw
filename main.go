@@ -97,7 +97,9 @@ func (c *Client) GetUsersShow(screenName string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return getUser(req)
+	var user User
+	err = exec(req, &user)
+	return &user, err
 }
 
 func (c *Client) GetUsersShowByID(id int64) (*User, error) {
@@ -106,34 +108,47 @@ func (c *Client) GetUsersShowByID(id int64) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return getUser(req)
+	var user User
+	err = exec(req, &user)
+	return &user, err
 }
 
-func getUser(req *http.Request) (*User, error) {
+func exec(req *http.Request, data interface{}) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	r, err := gzip.NewReader(resp.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	rb, err := ioutil.ReadAll(r)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	var user = &User{}
-	if err = json.Unmarshal(rb, user); err != nil {
-		return nil, err
+	if err = json.Unmarshal(rb, data); err != nil {
+		return err
 	}
 
 	// Too Many Requests
 	if resp.StatusCode == 429 {
-		return user, ErrTooManyRequests
+		return ErrTooManyRequests
 	}
 	if resp.StatusCode != http.StatusOK {
-		return user, errors.New(resp.Status)
+		return errors.New(resp.Status)
 	}
-	return user, nil
+	return nil
+}
+
+func (c *Client) GetTweetsByID(id uint64, count uint) ([]Tweet, error) {
+	url := fmt.Sprintf("%s/statuses/user_timeline.json?user_id=%d&count=%d",
+		baseURL, id, count)
+	req, err := c.prepareRequest("GET", url)
+	tweets := make([]Tweet, 0)
+	if err != nil {
+		return tweets, err
+	}
+	err = exec(req, &tweets)
+	return tweets, err
 }

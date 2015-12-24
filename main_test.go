@@ -10,11 +10,19 @@ import (
 var (
 	ck string
 	cs string
+	tc *Client
 )
 
 func init() {
 	ck = os.Getenv("TWITTER_CONSUMER_KEY")
 	cs = os.Getenv("TWITTER_CONSUMER_SECRET")
+}
+
+func setup() {
+	tc = NewClient()
+	if err := tc.SetKeys(ck, cs); err != nil {
+		log.Fatalf("Failed to setup client")
+	}
 }
 
 func TestGetAccessToken(t *testing.T) {
@@ -25,10 +33,7 @@ func TestGetAccessToken(t *testing.T) {
 }
 
 func TestGetUsersShow(t *testing.T) {
-	tc := NewClient()
-	if err := tc.SetKeys(ck, cs); err != nil {
-		t.Fatalf("Failed to setup client")
-	}
+	setup()
 
 	user, err := tc.GetUsersShow("twitterdev")
 	if err != nil {
@@ -41,10 +46,7 @@ func TestGetUsersShow(t *testing.T) {
 }
 
 func TestGetUsersShowByID(t *testing.T) {
-	tc := NewClient()
-	if err := tc.SetKeys(ck, cs); err != nil {
-		t.Fatalf("Failed to setup client")
-	}
+	setup()
 
 	user, err := tc.GetUsersShowByID(int64(2244994945))
 	if err != nil {
@@ -54,6 +56,19 @@ func TestGetUsersShowByID(t *testing.T) {
 	screenName := user.ScreenName
 	if strings.ToLower(screenName) != "twitterdev" {
 		t.Errorf("Expected user to be %q, got %q", "twitterdev", screenName)
+	}
+}
+
+func TestTweetsByID(t *testing.T) {
+	setup()
+
+	tweets, err := tc.GetTweetsByID(2244994945, 10)
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	if len(tweets) != 10 {
+		log.Fatalf("Expected to get 10 tweets, got %d", len(tweets))
 	}
 }
 
