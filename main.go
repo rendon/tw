@@ -90,26 +90,26 @@ func (c *Client) prepareRequest(method, url string) (*http.Request, error) {
 	return req, err
 }
 
-func (c *Client) GetUsersShow(user string) (map[string]interface{}, error) {
-	user = url.QueryEscape(user)
-	urlStr := fmt.Sprintf("%s/users/show.json?screen_name=%s", baseURL, user)
-	req, err := c.prepareRequest("GET", urlStr)
+func (c *Client) GetUsersShow(screenName string) (*User, error) {
+	screenName = url.QueryEscape(screenName)
+	url := fmt.Sprintf("%s/users/show.json?screen_name=%s", baseURL, screenName)
+	req, err := c.prepareRequest("GET", url)
 	if err != nil {
 		return nil, err
 	}
-	return exec(req)
+	return getUser(req)
 }
 
-func (c *Client) GetUsersShowByID(id int64) (map[string]interface{}, error) {
-	urlStr := fmt.Sprintf("%s/users/show.json?user_id=%d", baseURL, id)
-	req, err := c.prepareRequest("GET", urlStr)
+func (c *Client) GetUsersShowByID(id int64) (*User, error) {
+	url := fmt.Sprintf("%s/users/show.json?user_id=%d", baseURL, id)
+	req, err := c.prepareRequest("GET", url)
 	if err != nil {
 		return nil, err
 	}
-	return exec(req)
+	return getUser(req)
 }
 
-func exec(req *http.Request) (map[string]interface{}, error) {
+func getUser(req *http.Request) (*User, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -123,16 +123,17 @@ func exec(req *http.Request) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	var data map[string]interface{}
-	if err = json.Unmarshal(rb, &data); err != nil {
+	var user = &User{}
+	if err = json.Unmarshal(rb, user); err != nil {
 		return nil, err
 	}
+
 	// Too Many Requests
 	if resp.StatusCode == 429 {
-		return data, ErrTooManyRequests
+		return user, ErrTooManyRequests
 	}
 	if resp.StatusCode != http.StatusOK {
-		return data, errors.New(resp.Status)
+		return user, errors.New(resp.Status)
 	}
-	return data, nil
+	return user, nil
 }

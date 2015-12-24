@@ -30,14 +30,13 @@ func TestGetUsersShow(t *testing.T) {
 		t.Fatalf("Failed to setup client")
 	}
 
-	data, err := tc.GetUsersShow("twitterdev")
+	user, err := tc.GetUsersShow("twitterdev")
 	if err != nil {
 		t.Fatalf("Failed to obtain user: %s", err)
 	}
 
-	id := data["id_str"].(string)
-	if id != "2244994945" {
-		t.Errorf("Expected ID to be 2244994945, got %v", id)
+	if user.ID != 2244994945 {
+		t.Errorf("Expected ID to be 2244994945, got %v", user.ID)
 	}
 }
 
@@ -47,14 +46,14 @@ func TestGetUsersShowByID(t *testing.T) {
 		t.Fatalf("Failed to setup client")
 	}
 
-	data, err := tc.GetUsersShowByID(int64(2244994945))
+	user, err := tc.GetUsersShowByID(int64(2244994945))
 	if err != nil {
 		t.Fatalf("Failed to obtain user: %s", err)
 	}
 
-	user := data["screen_name"].(string)
-	if strings.ToLower(user) != "twitterdev" {
-		t.Errorf("Expected user to be %q, got %q", "twitterdev", user)
+	screenName := user.ScreenName
+	if strings.ToLower(screenName) != "twitterdev" {
+		t.Errorf("Expected user to be %q, got %q", "twitterdev", screenName)
 	}
 }
 
