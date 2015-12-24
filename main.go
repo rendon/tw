@@ -102,7 +102,7 @@ func (c *Client) GetUsersShow(screenName string) (*User, error) {
 	return &user, err
 }
 
-func (c *Client) GetUsersShowByID(id int64) (*User, error) {
+func (c *Client) GetUsersShowByID(id uint64) (*User, error) {
 	url := fmt.Sprintf("%s/users/show.json?user_id=%d", baseURL, id)
 	req, err := c.prepareRequest("GET", url)
 	if err != nil {
