@@ -141,6 +141,19 @@ func exec(req *http.Request, data interface{}) error {
 	return nil
 }
 
+func (c *Client) GetTweets(screenName string, count uint) ([]Tweet, error) {
+	screenName = url.QueryEscape(screenName)
+	url := fmt.Sprintf("%s/statuses/user_timeline.json?screen_name=%s&count=%d",
+		baseURL, screenName, count)
+	req, err := c.prepareRequest("GET", url)
+	tweets := make([]Tweet, 0)
+	if err != nil {
+		return tweets, err
+	}
+	err = exec(req, &tweets)
+	return tweets, err
+}
+
 func (c *Client) GetTweetsByID(id uint64, count uint) ([]Tweet, error) {
 	url := fmt.Sprintf("%s/statuses/user_timeline.json?user_id=%d&count=%d",
 		baseURL, id, count)

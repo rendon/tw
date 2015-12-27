@@ -48,7 +48,7 @@ func TestGetUsersShow(t *testing.T) {
 func TestGetUsersShowByID(t *testing.T) {
 	setup()
 
-	user, err := tc.GetUsersShowByID(int64(2244994945))
+	user, err := tc.GetUsersShowByID(2244994945)
 	if err != nil {
 		t.Fatalf("Failed to obtain user: %s", err)
 	}
@@ -59,7 +59,20 @@ func TestGetUsersShowByID(t *testing.T) {
 	}
 }
 
-func TestTweetsByID(t *testing.T) {
+func TestGetTweets(t *testing.T) {
+	setup()
+
+	tweets, err := tc.GetTweets("twitterdev", 10)
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	if len(tweets) != 10 {
+		log.Fatalf("Expected to get 10 tweets, got %d", len(tweets))
+	}
+}
+
+func TestGetTweetsByID(t *testing.T) {
 	setup()
 
 	tweets, err := tc.GetTweetsByID(2244994945, 10)
@@ -73,7 +86,7 @@ func TestTweetsByID(t *testing.T) {
 }
 
 // TODO: find a reproducible way to test rate limits
-func TestTooMuchRequests(t *testing.T) {
+func TTestTooMuchRequests(t *testing.T) {
 	ckTMR := os.Getenv("TWITTER_CONSUMER_KEY_TMR")
 	csTMR := os.Getenv("TWITTER_CONSUMER_SECRET_TMR")
 	tc := NewClient()
