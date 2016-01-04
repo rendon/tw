@@ -21,12 +21,6 @@ var (
 	ErrTooManyRequests = errors.New("Too Many Requests")
 )
 
-type Client struct {
-	consumerKey       string
-	consumerSecret    string
-	bearerAccessToken string
-}
-
 func GetBearerAccessToken(consumerKey, consumerSecret string) (string, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", authURL, nil)
@@ -157,11 +151,20 @@ func (c *Client) GetTweets(screenName string, count uint) ([]Tweet, error) {
 func (c *Client) GetTweetsByID(id uint64, count uint) ([]Tweet, error) {
 	url := fmt.Sprintf("%s/statuses/user_timeline.json?user_id=%d&count=%d",
 		baseURL, id, count)
-	req, err := c.prepareRequest("GET", url)
 	tweets := make([]Tweet, 0)
+	req, err := c.prepareRequest("GET", url)
 	if err != nil {
 		return tweets, err
 	}
 	err = exec(req, &tweets)
 	return tweets, err
+}
+
+func (c *Client) GetFollowersIdsByID(id uint64, count int) *FollowersIterator {
+	return &FollowersIterator{
+		client: c,
+		userID: id,
+		count:  count,
+		cursor: -1,
+	}
 }

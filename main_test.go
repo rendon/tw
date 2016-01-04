@@ -106,3 +106,17 @@ func TTestTooMuchRequests(t *testing.T) {
 		}
 	}
 }
+func TestGetFollowersIdsByID(t *testing.T) {
+	setup()
+	ps := 20
+	iter := tc.GetFollowersIdsByID(2244994945, ps)
+	var f []uint64
+	for i := 0; i < 3; i++ {
+		if err := iter.Next(&f); err != nil {
+			log.Fatalf("Unexpected error: %s", err)
+		}
+		if len(f) != ps {
+			t.Fatalf("Expected page with size %d, got %d", ps, len(f))
+		}
+	}
+}
