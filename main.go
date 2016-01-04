@@ -168,3 +168,12 @@ func (c *Client) GetFollowersIdsByID(id uint64, count int) *FollowersIterator {
 		cursor: -1,
 	}
 }
+
+func (c *Client) GetFriendsIdsByID(id uint64, count int) *FriendsIterator {
+	return &FriendsIterator{
+		client: c,
+		userID: id,
+		count:  count,
+		cursor: -1,
+	}
+}
