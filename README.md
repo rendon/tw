@@ -24,6 +24,7 @@ func rotateKeys(tc *tw.Client) {
 }
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Llongfile)
 
 	// Create new client
 	tc := tw.NewClient()
@@ -54,6 +55,8 @@ func main() {
 			if err == tw.ErrTooManyRequests {
 				rotateKeys(tc)
 				i--
+			} else if err == tw.ErrNoMorePages {
+				break
 			} else {
 				log.Fatal(err)
 			}
@@ -66,13 +69,15 @@ func main() {
 
 	// GET friends/ids
 	fmt.Printf("First friends IDs:\n")
-	friends := tc.GetFriendsIdsByID(2244994945, 5)
+	friends := tc.GetFriendsIdsByID(191541009, 50)
 	for i := 0; i < 10; i++ {
 		err = friends.Next(&ids)
 		if err != nil {
 			if err == tw.ErrTooManyRequests {
 				rotateKeys(tc)
 				i--
+			} else if err == tw.ErrNoMorePages {
+				break
 			} else {
 				log.Fatal(err)
 			}

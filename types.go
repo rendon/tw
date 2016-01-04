@@ -9,6 +9,10 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+var (
+	ErrNoMorePages = errors.New("No more remaining pages")
+)
+
 type FollowersPage struct {
 	IDs            []uint64 `json:"ids"`
 	NextCursor     int64    `json:"next_cursor"`
@@ -97,7 +101,7 @@ type FriendsIterator struct {
 
 func (t *FollowersIterator) Next(data *[]uint64) error {
 	if t.cursor == 0 {
-		return errors.New("No more remaining pages")
+		return ErrNoMorePages
 	}
 	url := fmt.Sprintf("%s/followers/ids.json?count=%d&cursor=%d",
 		baseURL, t.count, t.cursor)
@@ -121,7 +125,7 @@ func (t *FollowersIterator) Next(data *[]uint64) error {
 
 func (t *FriendsIterator) Next(data *[]uint64) error {
 	if t.cursor == 0 {
-		return errors.New("No more remaining pages")
+		return ErrNoMorePages
 	}
 	url := fmt.Sprintf("%s/friends/ids.json?count=%d&cursor=%d",
 		baseURL, t.count, t.cursor)
@@ -134,7 +138,7 @@ func (t *FriendsIterator) Next(data *[]uint64) error {
 	if err != nil {
 		return err
 	}
-	var resp FollowersPage
+	var resp FriendsPage
 	if err = exec(req, &resp); err != nil {
 		return err
 	}
