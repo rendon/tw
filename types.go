@@ -69,12 +69,13 @@ type User struct {
 }
 
 type Tweet struct {
-	ID           uint64   `json:"id"                 bson:"_id"`
-	Text         string   `json:"text"               bson:"text"`
-	Retweeted    bool     `json:"retweeted"          bson:"retweeted"`
-	RetweetCount uint     `json:"retweet_count"      bson:"retweet_count"`
-	Sensitive    bool     `json:"possibly_sensitive" bson:"possibly_sensitive"`
-	CreatedAt    RubyDate `json:"created_at"         bson:"created_at"`
+	ID            uint64   `json:"id"                 bson:"_id"`
+	Text          string   `json:"text"               bson:"text"`
+	Retweeted     bool     `json:"retweeted"          bson:"retweeted"`
+	RetweetCount  uint     `json:"retweet_count"      bson:"retweet_count"`
+	FavoriteCount uint     `json:"favorite_count"     bson:"favorite_count"`
+	Sensitive     bool     `json:"possibly_sensitive" bson:"possibly_sensitive"`
+	CreatedAt     RubyDate `json:"created_at"         bson:"created_at"`
 }
 
 type Client struct {
