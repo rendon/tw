@@ -19,6 +19,7 @@ const (
 
 var (
 	ErrTooManyRequests = errors.New("Too Many Requests")
+	ErrUnauthorized    = errors.New("Authorization Required")
 )
 
 func GetBearerAccessToken(consumerKey, consumerSecret string) (string, error) {
@@ -121,16 +122,19 @@ func exec(req *http.Request, data interface{}) error {
 	if err != nil {
 		return err
 	}
-	if err = json.Unmarshal(rb, data); err != nil {
-		return err
-	}
-
 	// Too Many Requests
 	if resp.StatusCode == 429 {
 		return ErrTooManyRequests
 	}
+	if resp.StatusCode == 401 {
+		return ErrUnauthorized
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		return errors.New(resp.Status)
+	}
+	if err = json.Unmarshal(rb, data); err != nil {
+		return err
 	}
 	return nil
 }
