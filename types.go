@@ -68,6 +68,12 @@ type User struct {
 	CreatedAt       RubyDate `json:"created_at"        bson:"created_at"`
 }
 
+type UserMention struct {
+	ID uint64 `json:"id" bson:"id"`
+}
+type Entities struct {
+	UserMentions []UserMention `json:"user_mentions"   bson:"user_mentions"`
+}
 type Tweet struct {
 	ID            uint64   `json:"id"                 bson:"_id"`
 	Text          string   `json:"text"               bson:"text"`
@@ -75,6 +81,7 @@ type Tweet struct {
 	RetweetCount  uint     `json:"retweet_count"      bson:"retweet_count"`
 	FavoriteCount uint     `json:"favorite_count"     bson:"favorite_count"`
 	Sensitive     bool     `json:"possibly_sensitive" bson:"possibly_sensitive"`
+	Entities      Entities `json:"entities"           bson:"entities"`
 	CreatedAt     RubyDate `json:"created_at"         bson:"created_at"`
 }
 
