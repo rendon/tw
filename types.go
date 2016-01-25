@@ -29,22 +29,22 @@ type RubyDate struct {
 	value time.Time
 }
 
-func (t *RubyDate) MarshalJSON() ([]byte, error) {
+func (t RubyDate) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + t.value.Format(time.RubyDate) + `"`), nil
 }
 
-func (t *RubyDate) UnmarshalJSON(data []byte) error {
+func (t RubyDate) UnmarshalJSON(data []byte) error {
 	ts := strings.Trim(string(data), `"`)
 	var err error
 	t.value, err = time.Parse(time.RubyDate, ts)
 	return err
 }
 
-func (t *RubyDate) GetBSON() (interface{}, error) {
+func (t RubyDate) GetBSON() (interface{}, error) {
 	return t.value, nil
 }
 
-func (t *RubyDate) SetBSON(raw bson.Raw) error {
+func (t RubyDate) SetBSON(raw bson.Raw) error {
 	return raw.Unmarshal(&t.value)
 }
 
