@@ -15,6 +15,9 @@ import (
 const (
 	baseURL = "https://api.twitter.com/1.1"
 	authURL = "https://api.twitter.com/oauth2/token"
+
+	MaxFollowersCount = 5000
+	MaxFriendsCount   = 5000
 )
 
 var (
@@ -97,7 +100,7 @@ func (c *Client) GetUsersShow(screenName string) (*User, error) {
 	return &user, err
 }
 
-func (c *Client) GetUsersShowByID(id uint64) (*User, error) {
+func (c *Client) GetUsersShowByID(id int64) (*User, error) {
 	url := fmt.Sprintf("%s/users/show.json?user_id=%d", baseURL, id)
 	req, err := c.prepareRequest("GET", url)
 	if err != nil {
@@ -152,7 +155,7 @@ func (c *Client) GetTweets(screenName string, count uint) ([]Tweet, error) {
 	return tweets, err
 }
 
-func (c *Client) GetTweetsByID(id uint64, count uint) ([]Tweet, error) {
+func (c *Client) GetTweetsByID(id int64, count uint) ([]Tweet, error) {
 	url := fmt.Sprintf("%s/statuses/user_timeline.json?user_id=%d&count=%d",
 		baseURL, id, count)
 	tweets := make([]Tweet, 0)
@@ -164,7 +167,7 @@ func (c *Client) GetTweetsByID(id uint64, count uint) ([]Tweet, error) {
 	return tweets, err
 }
 
-func (c *Client) GetFollowersIdsByID(id uint64, count int) *FollowersIterator {
+func (c *Client) GetFollowersIdsByID(id int64, count int) *FollowersIterator {
 	return &FollowersIterator{
 		client: c,
 		userID: id,
@@ -173,7 +176,7 @@ func (c *Client) GetFollowersIdsByID(id uint64, count int) *FollowersIterator {
 	}
 }
 
-func (c *Client) GetFriendsIdsByID(id uint64, count int) *FriendsIterator {
+func (c *Client) GetFriendsIdsByID(id int64, count int) *FriendsIterator {
 	return &FriendsIterator{
 		client: c,
 		userID: id,

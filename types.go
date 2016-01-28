@@ -14,15 +14,15 @@ var (
 )
 
 type FollowersPage struct {
-	IDs            []uint64 `json:"ids"`
-	NextCursor     int64    `json:"next_cursor"`
-	PreviousCursor int64    `json:"previous_cursor"`
+	IDs            []int64 `json:"ids"`
+	NextCursor     int64   `json:"next_cursor"`
+	PreviousCursor int64   `json:"previous_cursor"`
 }
 
 type FriendsPage struct {
-	IDs            []uint64 `json:"ids"`
-	NextCursor     int64    `json:"next_cursor"`
-	PreviousCursor int64    `json:"previous_cursor"`
+	IDs            []int64 `json:"ids"`
+	NextCursor     int64   `json:"next_cursor"`
+	PreviousCursor int64   `json:"previous_cursor"`
 }
 
 type RubyDate struct {
@@ -49,7 +49,7 @@ func (t RubyDate) SetBSON(raw bson.Raw) error {
 }
 
 type User struct {
-	ID              uint64   `json:"id"                bson:"_id"`
+	ID              int64    `json:"id"                bson:"_id"`
 	Name            string   `json:"name"              bson:"name"`
 	ScreenName      string   `json:"screen_name"       bson:"screen_name"`
 	Description     string   `json:"description"       bson:"description"`
@@ -69,15 +69,17 @@ type User struct {
 }
 
 type UserMention struct {
-	ID uint64 `json:"id" bson:"id"`
+	ID int64 `json:"id" bson:"id"`
 }
 type Entities struct {
 	UserMentions []UserMention `json:"user_mentions"   bson:"user_mentions"`
 }
 type Tweet struct {
-	ID            uint64   `json:"id"                 bson:"_id"`
+	ID            int64    `json:"id"                 bson:"_id"`
+	UserID        int64    `json:"user_id"            bson:"user_id"`
 	Text          string   `json:"text"               bson:"text"`
 	Retweeted     bool     `json:"retweeted"          bson:"retweeted"`
+	IsRetweet     bool     `json:"is_retweet"         bson:"is_retweet"`
 	RetweetCount  uint     `json:"retweet_count"      bson:"retweet_count"`
 	FavoriteCount uint     `json:"favorite_count"     bson:"favorite_count"`
 	Sensitive     bool     `json:"possibly_sensitive" bson:"possibly_sensitive"`
@@ -93,7 +95,7 @@ type Client struct {
 
 type FollowersIterator struct {
 	client     *Client
-	userID     uint64
+	userID     int64
 	screenName string
 	count      int
 	cursor     int64
@@ -101,13 +103,13 @@ type FollowersIterator struct {
 
 type FriendsIterator struct {
 	client     *Client
-	userID     uint64
+	userID     int64
 	screenName string
 	count      int
 	cursor     int64
 }
 
-func (t *FollowersIterator) Next(data *[]uint64) error {
+func (t *FollowersIterator) Next(data *[]int64) error {
 	if t.cursor == 0 {
 		return ErrNoMorePages
 	}
@@ -131,7 +133,7 @@ func (t *FollowersIterator) Next(data *[]uint64) error {
 	return nil
 }
 
-func (t *FriendsIterator) Next(data *[]uint64) error {
+func (t *FriendsIterator) Next(data *[]int64) error {
 	if t.cursor == 0 {
 		return ErrNoMorePages
 	}

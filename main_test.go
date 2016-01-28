@@ -110,7 +110,7 @@ func TestGetFollowersIdsByID(t *testing.T) {
 	setup()
 	ps := 10
 	iter := tc.GetFollowersIdsByID(2244994945, ps)
-	var f []uint64
+	var f []int64
 	for i := 0; i < 3; i++ {
 		if err := iter.Next(&f); err != nil {
 			log.Fatalf("Unexpected error: %s", err)
@@ -125,7 +125,7 @@ func TestGetFriendsIdsByID(t *testing.T) {
 	setup()
 	ps := 10
 	iter := tc.GetFriendsIdsByID(2244994945, ps)
-	var f []uint64
+	var f []int64
 	for i := 0; i < 3; i++ {
 		if err := iter.Next(&f); err != nil {
 			log.Fatalf("Unexpected error: %s", err)
