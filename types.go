@@ -29,43 +29,44 @@ type RubyDate struct {
 	value time.Time
 }
 
-func (t RubyDate) MarshalJSON() ([]byte, error) {
+func (t *RubyDate) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + t.value.Format(time.RubyDate) + `"`), nil
 }
 
-func (t RubyDate) UnmarshalJSON(data []byte) error {
+func (t *RubyDate) UnmarshalJSON(data []byte) error {
 	ts := strings.Trim(string(data), `"`)
 	var err error
 	t.value, err = time.Parse(time.RubyDate, ts)
 	return err
 }
 
-func (t RubyDate) GetBSON() (interface{}, error) {
+func (t *RubyDate) GetBSON() (interface{}, error) {
 	return t.value, nil
 }
 
-func (t RubyDate) SetBSON(raw bson.Raw) error {
+func (t *RubyDate) SetBSON(raw bson.Raw) error {
 	return raw.Unmarshal(&t.value)
 }
 
 type User struct {
-	ID              int64    `json:"id"                bson:"_id"`
-	Name            string   `json:"name"              bson:"name"`
-	ScreenName      string   `json:"screen_name"       bson:"screen_name"`
-	Description     string   `json:"description"       bson:"description"`
-	ProfileImageURL string   `json:"profile_image_url" bson:"profile_image_url"`
-	Location        string   `json:"location"          bson:"location"`
-	Lang            string   `json:"lang"              bson:"lang"`
-	TimeZone        string   `json:"time_zone"         bson:"time_zone"`
-	URL             string   `json:"url"               bson:"url"`
-	Protected       bool     `json:"protected"         bson:"protected"`
-	Verified        bool     `json:"verified"          bson:"verified"`
-	FriendsCount    int      `json:"friends_count"     bson:"friends_count"`
-	ListedCount     int      `json:"listed_count"      bson:"listed_count"`
-	FavouritesCount int      `json:"favourites_count"  bson:"favourites_count"`
-	FollowersCount  int      `json:"followers_count"   bson:"followers_count"`
-	StatusesCount   int      `json:"statuses_count"    bson:"statuses_count"`
-	CreatedAt       RubyDate `json:"created_at"        bson:"created_at"`
+	ID              int64     `json:"id"                bson:"_id"`
+	Name            string    `json:"name"              bson:"name"`
+	ScreenName      string    `json:"screen_name"       bson:"screen_name"`
+	Description     string    `json:"description"       bson:"description"`
+	ProfileImageURL string    `json:"profile_image_url" bson:"profile_image_url"`
+	Location        string    `json:"location"          bson:"location"`
+	Lang            string    `json:"lang"              bson:"lang"`
+	TimeZone        string    `json:"time_zone"         bson:"time_zone"`
+	URL             string    `json:"url"               bson:"url"`
+	Protected       bool      `json:"protected"         bson:"protected"`
+	Verified        bool      `json:"verified"          bson:"verified"`
+	FriendsCount    int       `json:"friends_count"     bson:"friends_count"`
+	ListedCount     int       `json:"listed_count"      bson:"listed_count"`
+	FavouritesCount int       `json:"favourites_count"  bson:"favourites_count"`
+	FollowersCount  int       `json:"followers_count"   bson:"followers_count"`
+	StatusesCount   int       `json:"statuses_count"    bson:"statuses_count"`
+	CreatedAt       *RubyDate `json:"created_at"        bson:"created_at"`
+	RetrievedAt     time.Time `json:"retrieved_at"      bson:"retrieved_at"`
 }
 
 type UserMention struct {
