@@ -10,6 +10,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
+	"time"
 )
 
 const (
@@ -20,9 +22,17 @@ const (
 	MaxFriendsCount   = 5000
 )
 
+type RateLimitError struct {
+	ResetTime time.Time
+}
+
+func (t RateLimitError) Error() string {
+	return ErrMsgTooManyRequests
+}
+
 var (
-	ErrTooManyRequests = errors.New("Too Many Requests")
-	ErrUnauthorized    = errors.New("Authorization Required")
+	ErrMsgTooManyRequests = "Too Many Requests"
+	ErrUnauthorized       = errors.New("Authorization Required")
 )
 
 func GetBearerAccessToken(consumerKey, consumerSecret string) (string, error) {
@@ -127,7 +137,15 @@ func exec(req *http.Request, data interface{}) error {
 	}
 	// Too Many Requests
 	if resp.StatusCode == 429 {
-		return ErrTooManyRequests
+		var reset time.Time
+		rateLimitReset := resp.Header.Get("X-Rate-Limit-Reset")
+		t, err := strconv.ParseInt(rateLimitReset, 10, 64)
+		if err != nil {
+			reset = time.Now().Add(16 * time.Minute)
+		} else {
+			reset = time.Unix(t, 0)
+		}
+		return RateLimitError{ResetTime: reset}
 	}
 	if resp.StatusCode == 401 {
 		return ErrUnauthorized
