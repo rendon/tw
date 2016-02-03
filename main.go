@@ -71,7 +71,7 @@ func GetBearerAccessToken(consumerKey, consumerSecret string) (string, error) {
 	return data["access_token"].(string), nil
 }
 
-func NewClient() *Client {
+func New() *Client {
 	return &Client{}
 }
 

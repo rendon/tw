@@ -19,7 +19,7 @@ func init() {
 }
 
 func setup() {
-	tc = NewClient()
+	tc = New()
 	if err := tc.SetKeys(ck, cs); err != nil {
 		log.Fatalf("Failed to setup client")
 	}
@@ -89,7 +89,7 @@ func TestGetTweetsByID(t *testing.T) {
 func TestTooMuchRequests(t *testing.T) {
 	ckTMR := os.Getenv("TWITTER_CONSUMER_KEY_TMR")
 	csTMR := os.Getenv("TWITTER_CONSUMER_SECRET_TMR")
-	tc := NewClient()
+	tc := New()
 	if err := tc.SetKeys(ckTMR, csTMR); err != nil {
 		t.Fatalf("Failed to setup client")
 	}
