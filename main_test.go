@@ -19,15 +19,15 @@ func init() {
 }
 
 func setup() {
-	tc = New()
-	if err := tc.SetKeys(ck, cs); err != nil {
+	tc = NewClient(ck, cs)
+	if err := tc.GetBearerAccessToken(); err != nil {
 		log.Fatalf("Failed to setup client")
 	}
 }
 
 func TestGetAccessToken(t *testing.T) {
-	_, err := GetBearerAccessToken(ck, cs)
-	if err != nil {
+	setup()
+	if err := tc.GetBearerAccessToken(); err != nil {
 		t.Errorf("Expected to succeed but failed: %s", err)
 	}
 }
@@ -89,8 +89,8 @@ func TestGetTweetsByID(t *testing.T) {
 func TestTooMuchRequests(t *testing.T) {
 	ckTMR := os.Getenv("TWITTER_CONSUMER_KEY_TMR")
 	csTMR := os.Getenv("TWITTER_CONSUMER_SECRET_TMR")
-	tc := New()
-	if err := tc.SetKeys(ckTMR, csTMR); err != nil {
+	tc := NewClient(ckTMR, csTMR)
+	if err := tc.GetBearerAccessToken(); err != nil {
 		t.Fatalf("Failed to setup client")
 	}
 	log.Printf("Too Much Requests...")

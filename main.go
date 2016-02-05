@@ -35,12 +35,12 @@ var (
 	ErrUnauthorized       = errors.New("Authorization Required")
 )
 
-func GetBearerAccessToken(consumerKey, consumerSecret string) (string, error) {
+func (c *Client) GetBearerAccessToken() error {
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", authURL, nil)
 	req.Header.Add("User-Agent", "My Twitter app")
-	ck := url.QueryEscape(consumerKey)
-	cs := url.QueryEscape(consumerSecret)
+	ck := url.QueryEscape(c.ConsumerKey)
+	cs := url.QueryEscape(c.ConsumerSecret)
 	bt := base64.StdEncoding.EncodeToString([]byte(ck + ":" + cs))
 	req.Header.Add("Authorization", fmt.Sprintf("Basic %s", bt))
 	req.Header.Add("Content-Type",
@@ -53,37 +53,30 @@ func GetBearerAccessToken(consumerKey, consumerSecret string) (string, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", err
+		return err
 	}
 	r, err := gzip.NewReader(resp.Body)
 	if err != nil {
-		return "", err
+		return err
 	}
 	buf, err := ioutil.ReadAll(r)
 	if err != nil {
-		return "", err
+		return err
 	}
 	var data map[string]interface{}
 	err = json.Unmarshal(buf, &data)
 	if err != nil {
-		return "", err
-	}
-	return data["access_token"].(string), nil
-}
-
-func New() *Client {
-	return &Client{}
-}
-
-func (c *Client) SetKeys(consumerKey, consumerSecret string) error {
-	bat, err := GetBearerAccessToken(consumerKey, consumerSecret)
-	if err != nil {
 		return err
 	}
-	c.consumerSecret = consumerSecret
-	c.consumerKey = consumerKey
-	c.bearerAccessToken = bat
+	c.BearerAccessToken = data["access_token"].(string)
 	return nil
+}
+
+func NewClient(ck, cs string) *Client {
+	return &Client{
+		ConsumerKey:    ck,
+		ConsumerSecret: cs,
+	}
 }
 
 func (c *Client) prepareRequest(method, url string) (*http.Request, error) {
@@ -92,7 +85,7 @@ func (c *Client) prepareRequest(method, url string) (*http.Request, error) {
 		return nil, err
 	}
 	req.Header.Add("User-Agent", "My Twitter App")
-	auth := fmt.Sprintf("Bearer %s", c.bearerAccessToken)
+	auth := fmt.Sprintf("Bearer %s", c.BearerAccessToken)
 	req.Header.Add("Authorization", auth)
 	req.Header.Add("Accept-Encoding", "gzip")
 	return req, err

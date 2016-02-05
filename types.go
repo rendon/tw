@@ -76,7 +76,7 @@ type Entities struct {
 	UserMentions []UserMention `json:"user_mentions"   bson:"user_mentions"`
 }
 type Tweet struct {
-	ID            int64    `json:"id"                 bson:"_id"`
+	ID            int64    `json:"id"                 bson:"id"`
 	UserID        int64    `json:"user_id"            bson:"user_id"`
 	Text          string   `json:"text"               bson:"text"`
 	Retweeted     bool     `json:"retweeted"          bson:"retweeted"`
@@ -89,9 +89,9 @@ type Tweet struct {
 }
 
 type Client struct {
-	consumerKey       string
-	consumerSecret    string
-	bearerAccessToken string
+	ConsumerKey       string
+	ConsumerSecret    string
+	BearerAccessToken string
 }
 
 type FollowersIterator struct {
