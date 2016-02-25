@@ -1,43 +1,20 @@
-#tw
-[![GoDoc](https://godoc.org/github.com/rendon/tw?status.svg)](https://godoc.org/github.com/rendon/tw)
-
-A new and simple Twitter API client.
-
-**NOTE:** This client does not implement the entire Twitter API, even more, it only implements functions for a few endpoints, those that I need in my current project. You're welcome to contribute or ask for features.
-
-## Usage
-The basic usage is:
-
-Create a new client
-```go
-tc := tw.NewClient(ck, cs)
-```
-Get access token before any query
-```go
-if err := tc.GetBearerAccessToken(); err != nil {
-    log.Fatalf("Failed to obtain access token: %s", err)
-}
-```
-
-```go
-package main
+package tw
 
 import (
 	"fmt"
 	"log"
 	"os"
-
-	"github.com/rendon/tw"
 )
 
-func main() {
+func ExampleNewClient() {
 	log.SetFlags(log.LstdFlags | log.Llongfile)
 
 	// Create new client
 	ck := os.Getenv("TWITTER_CONSUMER_KEY")
 	cs := os.Getenv("TWITTER_CONSUMER_SECRET")
-	tc := tw.NewClient(ck, cs)
+	tc := NewClient(ck, cs)
 
+	// Set keys
 	if err := tc.GetBearerAccessToken(); err != nil {
 		log.Fatalf("Failed to obtain access token: %s", err)
 	}
@@ -70,7 +47,7 @@ func main() {
 	var ids []int64
 	for i := 0; i < 5; i++ {
 		err = followers.Next(&ids)
-		if err == tw.ErrEndOfList {
+		if err == ErrEndOfList {
 			break
 		}
 		if err != nil {
@@ -87,7 +64,7 @@ func main() {
 	friends := tc.GetFriendsIdsByID(191541009, 50)
 	for i := 0; i < 5; i++ {
 		err = friends.Next(&ids)
-		if err == tw.ErrEndOfList {
+		if err == ErrEndOfList {
 			break
 		}
 		if err != nil {
@@ -99,21 +76,3 @@ func main() {
 	}
 	fmt.Println()
 }
-```
-
-## Detecting "Too Many Requests"
-You can detect a rate limit error like so:
-
-```go
-if err != nil && err.Error() == tw.ErrMsgTooManyRequests {
-    // Do something about it
-}
-```
-
-Or use type assertion. The actual error in this case is of type `tw.RateLimitError`, which contains a `ResetTime` field with the time at which the access will be renewed. You can do something like this in the meanwhile:
-
-```go
-time.Sleep(err.ResetTime.Sub(time.Now()))
-```
-
-Originally this client was designed to use multiple sets of keys, rotating keys when detecting `Too Many Requests` errors. Now the recommended way is to create a list of clients, one per set of credentials and use some sort of balancing algorithm to decide which client to use.
