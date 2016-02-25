@@ -10,32 +10,36 @@ import (
 )
 
 var (
-	// Indicates we've reached the last page for those queries that fetch data
-	// in pages, e.g. get followers, get friends, etc.
+	// ErrEndOfList Indicates  we've reached the  last page for those  queries
+	// that fetch data in pages, e.g. get followers, get friends, etc.
 	ErrEndOfList = errors.New("No more pages available")
 )
 
+// FollowersPage describes a page of follower IDs.
 type FollowersPage struct {
 	IDs            []int64 `json:"ids"`
 	NextCursor     int64   `json:"next_cursor"`
 	PreviousCursor int64   `json:"previous_cursor"`
 }
 
+// FriendsPage describes a page of friend IDs.
 type FriendsPage struct {
 	IDs            []int64 `json:"ids"`
 	NextCursor     int64   `json:"next_cursor"`
 	PreviousCursor int64   `json:"previous_cursor"`
 }
 
-// Custom type to handle Twitter dates.
+// RubyDate is a custom type to handle Twitter dates.
 type RubyDate struct {
 	value time.Time
 }
 
+// MarshalJSON returns JSON representation of RubyDate type.
 func (t *RubyDate) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + t.value.Format(time.RubyDate) + `"`), nil
 }
 
+// UnmarshalJSON gets RubyDate value from data.
 func (t *RubyDate) UnmarshalJSON(data []byte) error {
 	ts := strings.Trim(string(data), `"`)
 	var err error
@@ -43,15 +47,17 @@ func (t *RubyDate) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// GetBSON returns value that can be represented in BSON format.
 func (t *RubyDate) GetBSON() (interface{}, error) {
 	return t.value, nil
 }
 
+// SetBSON sets RubyDate value from raw BSON value.
 func (t *RubyDate) SetBSON(raw bson.Raw) error {
 	return raw.Unmarshal(&t.value)
 }
 
-// Represents a user with some important fields.
+// User Represents a user with some important fields.
 type User struct {
 	ID              int64     `json:"id"                bson:"_id"`
 	Name            string    `json:"name"              bson:"name"`
@@ -73,15 +79,17 @@ type User struct {
 	RetrievedAt     time.Time `json:"retrieved_at"      bson:"retrieved_at"`
 }
 
+// UserMention represents a mention in a tweet.
 type UserMention struct {
 	ID int64 `json:"id" bson:"id"`
 }
 
+// Entities represents a list of mentions in a tweet.
 type Entities struct {
 	UserMentions []UserMention `json:"user_mentions"   bson:"user_mentions"`
 }
 
-// Represents a tweet with some important fields.
+// Tweet Represents a tweet with some important fields.
 type Tweet struct {
 	ID            int64    `json:"id"                 bson:"id"`
 	UserID        int64    `json:"user_id"            bson:"user_id"`
@@ -95,7 +103,7 @@ type Tweet struct {
 	CreatedAt     RubyDate `json:"created_at"         bson:"created_at"`
 }
 
-// Represents a Twitter API client with the necessary access data and
+// Client Represents a Twitter API client with the necessary access data and
 // methods to query the API.
 type Client struct {
 	ConsumerKey       string
@@ -103,7 +111,7 @@ type Client struct {
 	BearerAccessToken string
 }
 
-// Contains the necessary information to retrieve the next
+// FollowersIterator Contains the necessary information to retrieve the next
 // page of follower IDs.
 type FollowersIterator struct {
 	client     *Client
@@ -113,7 +121,7 @@ type FollowersIterator struct {
 	cursor     int64
 }
 
-// Contains the necessary information to retrieve the next
+// FriendsIterator Contains the necessary information to retrieve the next
 // page of friends IDs.
 type FriendsIterator struct {
 	client     *Client
@@ -123,7 +131,7 @@ type FriendsIterator struct {
 	cursor     int64
 }
 
-// Returns the next page of follower IDs.
+// Next Returns the next page of follower IDs.
 func (t *FollowersIterator) Next(data *[]int64) error {
 	if t.cursor == 0 {
 		return ErrEndOfList
@@ -148,7 +156,7 @@ func (t *FollowersIterator) Next(data *[]int64) error {
 	return nil
 }
 
-// Returns the next page of friends IDs.
+// Next Returns the next page of friends IDs.
 func (t *FriendsIterator) Next(data *[]int64) error {
 	if t.cursor == 0 {
 		return ErrEndOfList
