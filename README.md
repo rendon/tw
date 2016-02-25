@@ -1,7 +1,21 @@
 #tw
 A new and simple Twitter API client.
 
+**NOTE:** This client does not implement the entire Twitter API, even more, it only implements functions for a few endpoints, those that I need in my current project. You're welcome to contribute or ask for features.
+
 ## Usage
+The basic usage is:
+
+Create a new client
+```go
+tc := tw.NewClient(ck, cs)
+```
+Get access token before any query
+```go
+if err := tc.GetBearerAccessToken(); err != nil {
+    log.Fatalf("Failed to obtain access token: %s", err)
+}
+```
 
 ```go
 package main
@@ -14,26 +28,16 @@ import (
 	"github.com/rendon/tw"
 )
 
-func rotateKeys(tc *tw.Client) {
-	ck := os.Getenv("EXTRA_TWITTER_CONSUMER_KEY")
-	cs := os.Getenv("EXTRA_TWITTER_CONSUMER_SECRET")
-	if err := tc.SetKeys(ck, cs); err != nil {
-		log.Fatalf("Error setting keys: %s", err)
-	}
-	log.Printf("New keys set, go!\n")
-}
-
 func main() {
 	log.SetFlags(log.LstdFlags | log.Llongfile)
 
 	// Create new client
-	tc := tw.NewClient()
-
-	// Set keys
 	ck := os.Getenv("TWITTER_CONSUMER_KEY")
 	cs := os.Getenv("TWITTER_CONSUMER_SECRET")
-	if err := tc.SetKeys(ck, cs); err != nil {
-		log.Fatalf("Failed to setup client")
+	tc := tw.NewClient(ck, cs)
+
+	if err := tc.GetBearerAccessToken(); err != nil {
+		log.Fatalf("Failed to obtain access token: %s", err)
 	}
 
 	// GET users/show
@@ -45,21 +49,30 @@ func main() {
 	fmt.Printf("User ID: %d\n", user.ID)
 	fmt.Printf("User name: %s\n", user.ScreenName)
 
+	// GET statuses/user_timeline
+	tweets, err := tc.GetTweets("twitterdev", 5)
+	if err != nil {
+		log.Fatalf("Failed to obtain tweets: %s", err)
+	}
+
+	fmt.Printf("=================== Tweets =================================\n")
+	for i := range tweets {
+		fmt.Printf("%s\n", tweets[i].Text)
+		fmt.Printf("--------------------------------------------------------\n")
+	}
+	fmt.Println()
+
 	// GET followers/ids
 	fmt.Printf("First follower IDs:\n")
 	followers := tc.GetFollowersIdsByID(2244994945, 5)
-	var ids []uint64
-	for i := 0; i < 10; i++ {
+	var ids []int64
+	for i := 0; i < 5; i++ {
 		err = followers.Next(&ids)
+		if err == tw.ErrEndOfList {
+			break
+		}
 		if err != nil {
-			if err == tw.ErrTooManyRequests {
-				rotateKeys(tc)
-				i--
-			} else if err == tw.ErrNoMorePages {
-				break
-			} else {
-				log.Fatal(err)
-			}
+			log.Fatal(err)
 		}
 		for _, id := range ids {
 			fmt.Printf("%d\n", id)
@@ -70,17 +83,13 @@ func main() {
 	// GET friends/ids
 	fmt.Printf("First friends IDs:\n")
 	friends := tc.GetFriendsIdsByID(191541009, 50)
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 5; i++ {
 		err = friends.Next(&ids)
+		if err == tw.ErrEndOfList {
+			break
+		}
 		if err != nil {
-			if err == tw.ErrTooManyRequests {
-				rotateKeys(tc)
-				i--
-			} else if err == tw.ErrNoMorePages {
-				break
-			} else {
-				log.Fatal(err)
-			}
+			log.Fatal(err)
 		}
 		for _, id := range ids {
 			fmt.Printf("%d\n", id)
@@ -91,12 +100,18 @@ func main() {
 ```
 
 ## Detecting "Too Many Requests"
-The client was designed to use multiple sets of keys, if you reach the rate limit (`err` will be equal to `ErrTooManyRequests`), just call `SetKeys()` with a new set of keys and keep going.
+You can detect a rate limit error like so:
 
 ```go
-// GET users/show
-user, err := tc.UsersShow("twitterdev")
-if err == tw.ErrTooManyRequests {
-    // Set a new set of keys and try again
+if err != nil && err.Error() == tw.ErrMsgTooManyRequests {
+    // Do something about it
 }
 ```
+
+Or use type assertion. The actual error in this case is of type `tw.RateLimitError`, which contains a `ResetTime` field with the time at which the access will be renewed. You can do something like this in the meanwhile:
+
+```go
+time.Sleep(err.ResetTime.Sub(time.Now()))
+```
+
+Originally this client was designed to use multiple sets of keys, rotating keys when detecting `Too Many Requests` errors. Now the recommended way is to create a list of clients, one per set of credentials and use some sort of balancing algorithm to decide which client to use.

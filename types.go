@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	ErrNoMorePages = errors.New("No more remaining pages")
+	ErrEndOfList = errors.New("No more pages available")
 )
 
 type FollowersPage struct {
@@ -112,7 +112,7 @@ type FriendsIterator struct {
 
 func (t *FollowersIterator) Next(data *[]int64) error {
 	if t.cursor == 0 {
-		return ErrNoMorePages
+		return ErrEndOfList
 	}
 	url := fmt.Sprintf("%s/followers/ids.json?count=%d&cursor=%d",
 		baseURL, t.count, t.cursor)
@@ -136,7 +136,7 @@ func (t *FollowersIterator) Next(data *[]int64) error {
 
 func (t *FriendsIterator) Next(data *[]int64) error {
 	if t.cursor == 0 {
-		return ErrNoMorePages
+		return ErrEndOfList
 	}
 	url := fmt.Sprintf("%s/friends/ids.json?count=%d&cursor=%d",
 		baseURL, t.count, t.cursor)
