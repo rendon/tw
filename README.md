@@ -8,17 +8,18 @@ A new and simple Twitter API client.
 ## Usage
 The basic usage is:
 
-Create a new client
+Create a new client:
 ```go
 tc := tw.NewClient(ck, cs)
 ```
-Get access token before any query
+Get access token before any query:
 ```go
 if err := tc.GetBearerAccessToken(); err != nil {
     log.Fatalf("Failed to obtain access token: %s", err)
 }
 ```
 
+Go for it!
 ```go
 package main
 
