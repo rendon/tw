@@ -10,6 +10,8 @@ import (
 )
 
 var (
+	// Indicates we've reached the last page for those queries that fetch data
+	// in pages, e.g. get followers, get friends, etc.
 	ErrEndOfList = errors.New("No more pages available")
 )
 
@@ -25,6 +27,7 @@ type FriendsPage struct {
 	PreviousCursor int64   `json:"previous_cursor"`
 }
 
+// Custom type to handle Twitter dates.
 type RubyDate struct {
 	value time.Time
 }
@@ -48,6 +51,7 @@ func (t *RubyDate) SetBSON(raw bson.Raw) error {
 	return raw.Unmarshal(&t.value)
 }
 
+// Represents a user with some important fields.
 type User struct {
 	ID              int64     `json:"id"                bson:"_id"`
 	Name            string    `json:"name"              bson:"name"`
@@ -72,9 +76,12 @@ type User struct {
 type UserMention struct {
 	ID int64 `json:"id" bson:"id"`
 }
+
 type Entities struct {
 	UserMentions []UserMention `json:"user_mentions"   bson:"user_mentions"`
 }
+
+// Represents a tweet with some important fields.
 type Tweet struct {
 	ID            int64    `json:"id"                 bson:"id"`
 	UserID        int64    `json:"user_id"            bson:"user_id"`
@@ -88,12 +95,16 @@ type Tweet struct {
 	CreatedAt     RubyDate `json:"created_at"         bson:"created_at"`
 }
 
+// Represents a Twitter API client with the necessary access data and
+// methods to query the API.
 type Client struct {
 	ConsumerKey       string
 	ConsumerSecret    string
 	BearerAccessToken string
 }
 
+// Contains the necessary information to retrieve the next
+// page of follower IDs.
 type FollowersIterator struct {
 	client     *Client
 	userID     int64
@@ -102,6 +113,8 @@ type FollowersIterator struct {
 	cursor     int64
 }
 
+// Contains the necessary information to retrieve the next
+// page of friends IDs.
 type FriendsIterator struct {
 	client     *Client
 	userID     int64
@@ -110,6 +123,7 @@ type FriendsIterator struct {
 	cursor     int64
 }
 
+// Returns the next page of follower IDs.
 func (t *FollowersIterator) Next(data *[]int64) error {
 	if t.cursor == 0 {
 		return ErrEndOfList
@@ -134,6 +148,7 @@ func (t *FollowersIterator) Next(data *[]int64) error {
 	return nil
 }
 
+// Returns the next page of friends IDs.
 func (t *FriendsIterator) Next(data *[]int64) error {
 	if t.cursor == 0 {
 		return ErrEndOfList

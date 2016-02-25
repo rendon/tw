@@ -18,10 +18,19 @@ const (
 	baseURL = "https://api.twitter.com/1.1"
 	authURL = "https://api.twitter.com/oauth2/token"
 
+	// More info at: https://dev.twitter.com/rest/reference/get/followers/ids
 	MaxFollowersCount = 5000
-	MaxFriendsCount   = 5000
+
+	// More info at: https://dev.twitter.com/rest/reference/get/friends/ids
+	MaxFriendsCount = 5000
 )
 
+var (
+	ErrMsgTooManyRequests = "Too Many Requests"
+	ErrUnauthorized       = errors.New("Authorization Required")
+)
+
+// RateLimitError indicates a "Too Many Requests" error and associated data.
 type RateLimitError struct {
 	ResetTime time.Time
 }
@@ -30,11 +39,9 @@ func (t RateLimitError) Error() string {
 	return ErrMsgTooManyRequests
 }
 
-var (
-	ErrMsgTooManyRequests = "Too Many Requests"
-	ErrUnauthorized       = errors.New("Authorization Required")
-)
-
+// Authenticates with Twitter using the provided consumer key and consumer
+// secret. Details of the algorithmn are available at:
+// https://dev.twitter.com/oauth/application-only.
 func (c *Client) GetBearerAccessToken() error {
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", authURL, nil)
@@ -72,6 +79,7 @@ func (c *Client) GetBearerAccessToken() error {
 	return nil
 }
 
+// Returns a new client with credentials set.
 func NewClient(ck, cs string) *Client {
 	return &Client{
 		ConsumerKey:    ck,
@@ -89,29 +97,6 @@ func (c *Client) prepareRequest(method, url string) (*http.Request, error) {
 	req.Header.Add("Authorization", auth)
 	req.Header.Add("Accept-Encoding", "gzip")
 	return req, err
-}
-
-func (c *Client) GetUsersShow(screenName string) (*User, error) {
-	screenName = url.QueryEscape(screenName)
-	url := fmt.Sprintf("%s/users/show.json?screen_name=%s", baseURL, screenName)
-	req, err := c.prepareRequest("GET", url)
-	if err != nil {
-		return nil, err
-	}
-	var user User
-	err = exec(req, &user)
-	return &user, err
-}
-
-func (c *Client) GetUsersShowByID(id int64) (*User, error) {
-	url := fmt.Sprintf("%s/users/show.json?user_id=%d", baseURL, id)
-	req, err := c.prepareRequest("GET", url)
-	if err != nil {
-		return nil, err
-	}
-	var user User
-	err = exec(req, &user)
-	return &user, err
 }
 
 func exec(req *http.Request, data interface{}) error {
@@ -153,6 +138,35 @@ func exec(req *http.Request, data interface{}) error {
 	return nil
 }
 
+// Retrieves user profile given the user's screen name. For more information see
+// https://dev.twitter.com/rest/reference/get/users/show.
+func (c *Client) GetUsersShow(screenName string) (*User, error) {
+	screenName = url.QueryEscape(screenName)
+	url := fmt.Sprintf("%s/users/show.json?screen_name=%s", baseURL, screenName)
+	req, err := c.prepareRequest("GET", url)
+	if err != nil {
+		return nil, err
+	}
+	var user User
+	err = exec(req, &user)
+	return &user, err
+}
+
+// Retrieves user profile given it's ID. For more information see
+// https://dev.twitter.com/rest/reference/get/users/show.
+func (c *Client) GetUsersShowByID(id int64) (*User, error) {
+	url := fmt.Sprintf("%s/users/show.json?user_id=%d", baseURL, id)
+	req, err := c.prepareRequest("GET", url)
+	if err != nil {
+		return nil, err
+	}
+	var user User
+	err = exec(req, &user)
+	return &user, err
+}
+
+// Retrieves latest tweets, limited by count. For more information see
+// https://dev.twitter.com/rest/reference/get/statuses/user_timeline.
 func (c *Client) GetTweets(screenName string, count uint) ([]Tweet, error) {
 	screenName = url.QueryEscape(screenName)
 	url := fmt.Sprintf("%s/statuses/user_timeline.json?screen_name=%s&count=%d",
@@ -166,6 +180,8 @@ func (c *Client) GetTweets(screenName string, count uint) ([]Tweet, error) {
 	return tweets, err
 }
 
+// Retrieves latest tweets by user ID, limited by count. For more information
+// see https://dev.twitter.com/rest/reference/get/statuses/user_timeline.
 func (c *Client) GetTweetsByID(id int64, count uint) ([]Tweet, error) {
 	url := fmt.Sprintf("%s/statuses/user_timeline.json?user_id=%d&count=%d",
 		baseURL, id, count)
@@ -178,6 +194,9 @@ func (c *Client) GetTweetsByID(id int64, count uint) ([]Tweet, error) {
 	return tweets, err
 }
 
+// Returns an iterator which you can call to retrieve pages of followers IDs
+// for the user identified with ID. Count specifies the page size. See
+// https://dev.twitter.com/rest/reference/get/followers/ids.
 func (c *Client) GetFollowersIdsByID(id int64, count int) *FollowersIterator {
 	return &FollowersIterator{
 		client: c,
@@ -187,6 +206,9 @@ func (c *Client) GetFollowersIdsByID(id int64, count int) *FollowersIterator {
 	}
 }
 
+// Returns an iterator which you can call to retrieve pages of friends IDs
+// for the user identified with ID. Count specifies the page size. See
+// https://dev.twitter.com/rest/reference/get/friends/ids.
 func (c *Client) GetFriendsIdsByID(id int64, count int) *FriendsIterator {
 	return &FriendsIterator{
 		client: c,
