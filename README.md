@@ -1,7 +1,5 @@
 #tw
-[![GoDoc](https://godoc.org/github.com/rendon/tw?status.svg)](https://godoc.org/github.com/rendon/tw)
-
-[![Codeship](https://codeship.com/projects/a8d73b50-be36-0133-01f5-327e6e59f642/status?branch=master)](https://godoc.org/github.com/rendon/tw)
+[![Codeship](https://codeship.com/projects/a8d73b50-be36-0133-01f5-327e6e59f642/status?branch=master)](https://godoc.org/github.com/rendon/tw) [![GoDoc](https://godoc.org/github.com/rendon/tw?status.svg)](https://godoc.org/github.com/rendon/tw)
 
 A new and simple Twitter API client.
 
